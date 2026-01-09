@@ -1,48 +1,49 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: rabbitmq
+  name: mysql
   namespace: robotshop
   labels:
-    app.kubernetes.io/part-of: robot-shop
-    app.kubernetes.io/name: rabbitshop
+    app.kubernetes.io/name: mysql
     app.kubernetes.io/instance: dev
     app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: rabbitmq
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/part-of: robot-shop
     app.kubernetes.io/managed: manual
     app.kubernetes.io/tier: db
 spec:
-  serviceName: rabbitmq-service # Corrected Position
+  serviceName: mysql-service
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: rabbitmq
+      app.kubernetes.io/name: mysql
       app.kubernetes.io/instance: dev
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: rabbitmq
+        app.kubernetes.io/name: mysql
         app.kubernetes.io/instance: dev
         app.kubernetes.io/version: "1.0.0"
-        app.kubernetes.io/component: queue
+        app.kubernetes.io/component: mysql
         app.kubernetes.io/part-of: robot-shop
         app.kubernetes.io/managed: manual
         app.kubernetes.io/tier: db
     spec:
       securityContext:
         runAsNonRoot: true
-        fsGroup: 10001
         runAsGroup: 10001
+        fsGroup: 10001
+        readOnlyRootFilesystem: true
       containers:
-      - name: rabbitmq
-        image: joindevops/rabbitmq:v1
+      - name: mysql
+        image: joindevops/mysql:v1
         ports:
-        - containerPort: 5672
+        - containerPort: 3306
         securityContext:
           allowPrivilegeEscalation: false
           runAsUser: 10001
           runAsGroup: 10001
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: true  # Hardened!
           capabilities:
             drop:
             - ALL
@@ -55,23 +56,33 @@ spec:
             memory: "512Mi"
         envFrom:
         - secretRef:
-            name: rabbitmq-secret
+            name: mysql-secret
         volumeMounts:
-        - name: rabbitmq-data
-          mountPath: /var/lib/rabbitmq
-        - name: tmp
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        - name: mysql-tmp
           mountPath: /tmp
-        - name: rabbitmq-home
-          mountPath: /home/rabbitmq
+        - name: mysql-run
+          mountPath: /var/run/mysqld
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
       volumes:
-      - name: tmp
+      - name: mysql-tmp
         emptyDir: {}
-      - name: rabbitmq-home
+      - name: mysql-run
         emptyDir: {}
 
   volumeClaimTemplates:
   - metadata:
-      name: rabbitmq-data
+      name: mysql-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
