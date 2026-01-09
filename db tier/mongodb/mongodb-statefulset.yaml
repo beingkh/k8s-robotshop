@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: robotshop
+  labels:
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: mongodb
+    app.kubernetes.io/part-of: robot-shop
+    app.kubernetes.io/managed: manual
+spec:
+  serviceName: mongodb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb
+      app.kubernetes.io/instance: dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mongodb
+        app.kubernetes.io/instance: dev
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+      - name: mongodb
+        image: joindevops/mongodb:v1
+        ports:
+        - containerPort: 27017
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 10001
+          runAsGroup: 10001
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ "ALL" ]
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        envFrom:
+        - secretRef:
+            name: mongodb-secret
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi

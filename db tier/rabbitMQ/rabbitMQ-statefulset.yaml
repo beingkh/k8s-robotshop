@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: robotshop
+  labels:
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/part-of: robot-shop
+    app.kubernetes.io/managed: manual
+    app.kubernetes.io/tier: db
+spec:
+  serviceName: mysql-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mysql
+      app.kubernetes.io/instance: dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mysql
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: mysql
+        app.kubernetes.io/part-of: robot-shop
+        app.kubernetes.io/managed: manual
+        app.kubernetes.io/tier: db
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsGroup: 10001
+        fsGroup: 10001
+        readOnlyRootFilesystem: true
+      containers:
+      - name: mysql
+        image: joindevops/mysql:v1
+        ports:
+        - containerPort: 3306
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 10001
+          runAsGroup: 10001
+          readOnlyRootFilesystem: true  # Hardened!
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        envFrom:
+        - secretRef:
+            name: mysql-secret
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        - name: mysql-tmp
+          mountPath: /tmp
+        - name: mysql-run
+          mountPath: /var/run/mysqld
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: mysql-tmp
+        emptyDir: {}
+      - name: mysql-run
+        emptyDir: {}
+
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi

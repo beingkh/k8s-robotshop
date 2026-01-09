@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: robotshop
+  labels:
+    app.kubernetes.io/part-of: robot-shop
+    app.kubernetes.io/name: robotshop
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: mysql-service
+    app.kubernetes.io/managed: manual
+    app.kubernetes.io/tier: db
+spec:
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  selector:
+        app.kubernetes.io/name: mysql
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/tier: db
