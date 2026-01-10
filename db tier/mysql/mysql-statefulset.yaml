@@ -43,7 +43,6 @@ spec:
           allowPrivilegeEscalation: false
           runAsUser: 10001
           runAsGroup: 10001
-          readOnlyRootFilesystem: true  # Hardened!
           capabilities:
             drop:
             - ALL
