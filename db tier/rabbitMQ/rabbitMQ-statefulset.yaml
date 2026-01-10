@@ -5,7 +5,7 @@ metadata:
   namespace: robotshop
   labels:
     app.kubernetes.io/part-of: robot-shop
-    app.kubernetes.io/name: rabbitshop
+    app.kubernetes.io/name: rabbitmq # Fixed: usually matches component
     app.kubernetes.io/instance: dev
     app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/component: rabbitmq
@@ -24,22 +24,25 @@ spec:
         app.kubernetes.io/name: rabbitmq
         app.kubernetes.io/instance: dev
         app.kubernetes.io/version: "1.0.0"
-        app.kubernetes.io/component: queue
+        app.kubernetes.io/component: rabbitmq # Consistent with selector
         app.kubernetes.io/part-of: robot-shop
         app.kubernetes.io/managed: manual
         app.kubernetes.io/tier: db
     spec:
+      # This is the CORRECT place for fsGroup
       securityContext:
         runAsNonRoot: true
+        runAsUser: 10001
         fsGroup: 10001
       containers:
       - name: rabbitmq
         image: joindevops/rabbitmq:v1
         ports:
         - containerPort: 5672
+        # This is the Container-level security
         securityContext:
           runAsNonRoot: true
-          fsGroup: 10001
+          # fsGroup REMOVED from here to fix the error
           capabilities:
             drop:
             - ALL
@@ -65,7 +68,6 @@ spec:
         emptyDir: {}
       - name: rabbitmq-home
         emptyDir: {}
-
   volumeClaimTemplates:
   - metadata:
       name: rabbitmq-data
