@@ -33,7 +33,6 @@ spec:
         runAsNonRoot: true
         runAsGroup: 10001
         fsGroup: 10001
-        readOnlyRootFilesystem: true
       containers:
       - name: mysql
         image: joindevops/mysql:v1
