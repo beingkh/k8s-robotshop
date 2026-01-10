@@ -29,23 +29,12 @@ spec:
         app.kubernetes.io/managed: manual
         app.kubernetes.io/tier: db
     spec:
-      # This is the CORRECT place for fsGroup
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 10001
-        fsGroup: 10001
       containers:
       - name: rabbitmq
-        image: joindevops/rabbitmq:v1
+        image: rabbitmq:4.2.2-alpine
         ports:
         - containerPort: 5672
-        # This is the Container-level security
-        securityContext:
-          runAsNonRoot: true
-          # fsGroup REMOVED from here to fix the error
-          capabilities:
-            drop:
-            - ALL
+
         resources:
           requests:
             cpu: "250m"

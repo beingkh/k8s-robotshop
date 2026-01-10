@@ -29,21 +29,12 @@ spec:
         app.kubernetes.io/managed: manual
         app.kubernetes.io/tier: db
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 10001
       containers:
       - name: mysql
         image: joindevops/mysql:v1
         ports:
         - containerPort: 3306
-        securityContext:
-          allowPrivilegeEscalation: false
-          runAsUser: 10001
-          runAsGroup: 10001
-          capabilities:
-            drop:
-            - ALL
+
         resources:
           requests:
             cpu: "250m"

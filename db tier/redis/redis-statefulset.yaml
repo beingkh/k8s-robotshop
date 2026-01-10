@@ -29,18 +29,13 @@ spec:
         app.kubernetes.io/managed: manual
         app.kubernetes.io/tier: db
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 10001
       containers:
       - name: redis
-        image: redis:7.0
+        image: redis:7.2.0-alpine
         ports:
         - containerPort: 6379
           name: redis
-        securityContext:
-          runAsNonRoot: true
-          fsGroup: 10001
+
         resources:
           requests:
             cpu: "250m"
