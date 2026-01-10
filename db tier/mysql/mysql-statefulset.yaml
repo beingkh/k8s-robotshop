@@ -30,6 +30,7 @@ spec:
         app.kubernetes.io/tier: db
     spec:
       securityContext:
+        allowPrivilegeEscalation: false
         runAsNonRoot: true
         fsGroup: 10001
       containers:

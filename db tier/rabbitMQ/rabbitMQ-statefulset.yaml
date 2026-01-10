@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/managed: manual
     app.kubernetes.io/tier: db
 spec:
-  serviceName: rabbitmq-service # Corrected Position
+  serviceName: rabbitmq-service
   replicas: 1
   selector:
     matchLabels:
@@ -39,9 +39,8 @@ spec:
         - containerPort: 5672
         securityContext:
           allowPrivilegeEscalation: false
-          runAsUser: 10001
-          runAsGroup: 10001
-          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          fsGroup: 10001
           capabilities:
             drop:
             - ALL
