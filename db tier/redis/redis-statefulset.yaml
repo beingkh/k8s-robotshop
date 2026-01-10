@@ -39,7 +39,6 @@ spec:
         - containerPort: 6379
           name: redis
         securityContext:
-          allowPrivilegeEscalation: false
           runAsNonRoot: true
           fsGroup: 10001
         resources:
