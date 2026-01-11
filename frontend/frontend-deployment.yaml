@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: xgoods/ui:5.0
+        image: xgoods/ui:7.0
         ports:
         - containerPort: 80
         resources:
@@ -48,7 +48,7 @@ spec:
       volumes:
       - name: nginx-conf
         configMap:
-          name: nginx-conf
+          name: frontend-nginxconfig
           items:
           - key: nginx.conf
             path: nginx.conf

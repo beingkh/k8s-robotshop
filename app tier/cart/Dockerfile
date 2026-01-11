@@ -1,27 +1,11 @@
-# STAGE 1: Build Stage
-FROM node:20-alpine AS builder
-RUN apk add --no-cache curl unzip
+FROM alpine:latest AS build-stage
 WORKDIR /app
+COPY . .
 
-RUN curl -L -o /tmp/cart.zip https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip && \
-    unzip /tmp/cart.zip && \
-    rm /tmp/cart.zip
-
-RUN npm install --omit=dev
-
-
-# STAGE 2: Run Stage (Final Slim Image)
-FROM node:20-alpine
-
-WORKDIR /app
-
-COPY --from=builder /app /app
-
-ENV REDIS_HOST=redis \
-    CATALOGUE_HOST=catalogue \
-    CATALOGUE_PORT=8080
-
-EXPOSE 8080
-
-# Start the application
-CMD ["node", "server.js"]
+FROM nginx:stable-alpine
+# Explicitly setting root, though it is the default in this image
+USER root
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=build-stage /app/frontend-v3 /usr/share/nginx/html/
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
