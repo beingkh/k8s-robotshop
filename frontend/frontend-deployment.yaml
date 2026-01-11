@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: joindevops/frontend:v1
+        image: xgoods/ui:5.0
         ports:
         - containerPort: 80
         resources:

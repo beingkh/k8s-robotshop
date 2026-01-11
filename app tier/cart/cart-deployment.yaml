@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: cart
-        image: joindevops/cart:v1
+        image: xgoods/cart:1.0
         ports:
         - containerPort: 8080
         envFrom:
