@@ -11,7 +11,6 @@ metadata:
     app.kubernetes.io/part-of: robot-shop
     app.kubernetes.io/managed: manual
 spec:
-  # This must match the name of your Service object
   serviceName: mongodb-service
   replicas: 1
   selector:
@@ -25,21 +24,23 @@ spec:
         app.kubernetes.io/instance: dev
     spec:
       securityContext:
-        # fsGroup ensures the EBS volume permissions are changed to UID 999
-        fsGroup: 999
+        runAsNonRoot: true
+        # Updated to > 10000 per KSV020/021 security recommendations
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
       containers:
       - name: mongodb
-        # Using the multi-stage image you built (with seeding scripts)
-        image: mongodmongodb/mongodb-community-server:7.0.27-rc0-ubi8-20260111T081243Z
-
+        # Changed to official stable image to resolve 'no match for platform' error
+        image: mongo:7.0
         ports:
         - containerPort: 27017
-        # Explicit Non-Root Enforcement
         securityContext:
-          runAsNonRoot: true
-          runAsUser: 999
-          allowPrivilegeEscalation: false
-
+          allowPrivilegeEscalation: false # KSV001
+          readOnlyRootFilesystem: true # KSV014
+          capabilities:
+            drop:
+            - ALL # KSV003
         resources:
           requests:
             cpu: "250m"
@@ -47,28 +48,23 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-
         envFrom:
         - secretRef:
             name: mongodb-secret
-
         volumeMounts:
         - name: mongodb-data
           mountPath: /data/db
         - name: tmp
           mountPath: /tmp
-
       volumes:
       - name: tmp
         emptyDir: {}
-
-  # This creates the Persistent Volume Claim (PVC) automatically
   volumeClaimTemplates:
   - metadata:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      # If on AWS EKS, this will trigger the creation of an EBS volume
+      storageClassName: robotshop-storageclass # Explicitly link to your SC
       resources:
         requests:
           storage: 10Gi
