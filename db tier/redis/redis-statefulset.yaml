@@ -56,7 +56,7 @@ spec:
 
   volumeClaimTemplates:
   - metadata:
-      name: redis-pv
+      name: redis-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: robotshop-storageclass
