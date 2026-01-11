@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/managed: manual
     app.kubernetes.io/tier: web
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app.kubernetes.io/name: frontend
     app.kubernetes.io/instance: dev
@@ -20,4 +20,5 @@ spec:
   ports:
   - protocol: TCP
     port: 80 # service port
-    targetPort: 8080 # container port
+    targetPort: 80 # container port
+    nodePort: 30007
